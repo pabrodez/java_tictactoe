@@ -1,10 +1,13 @@
 package sample;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.text.Font;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,13 +22,11 @@ public class GridView {
 
 
   public GridView() {
-    this.turn = "X";
-    this.movesArray = new String[9];
-    Arrays.fill(movesArray, "");
+    resetTurn();
+    resetMovesArray();
   }
 
   private void changeTurn() {
-
     turn = (turn.equals("X")) ? "Y" : "X";
   }
 
@@ -33,60 +34,84 @@ public class GridView {
     int[][] horizontalArrays = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}};
     int[][] verticalArrays =   {{0, 3, 6}, {1, 4, 7}, {2, 5, 8}};
     int[][] diagonalArrays =   {{0, 4, 8}, {2, 4, 6}};
-    boolean horizontal = Arrays.stream(horizontalArrays).anyMatch((arr) -> {
-      return (movesArray[arr[0]].matches("[XY]") && movesArray[arr[0]].equals(movesArray[arr[1]]) && movesArray[arr[0]].equals(movesArray[arr[2]]));
+    int[][][] allArrays = {horizontalArrays, verticalArrays, diagonalArrays};
+
+    boolean anyThree = Arrays.stream(allArrays).anyMatch((arr) -> {
+      return Arrays.stream(arr).anyMatch((inds) -> {
+        return (movesArray[inds[0]] + movesArray[inds[1]] + movesArray[inds[2]]).matches("XXX|YYY");
+      });
     });
+
+    return anyThree;
 
   }
 
-  private Button createGridButton(int index) {
-    Button gridButton = new Button("");
-    gridButton.setOnAction((event) -> {
-      // check squared is not already played
-      if (gridButton.getText().isBlank()) {
-        gridButton.setText(turn);
-        movesArray[index] = turn;
-        // if (isWinner()) change view else changeTurn();
-        changeTurn();
-      }
-    });
+  private void resetTurn() {
+    this.turn = "X";
+  }
 
-    return gridButton;
+  private void resetMovesArray() {
+    this.movesArray = new String[9];
+    Arrays.fill(movesArray, "");
+  }
+
+  private boolean isDraw() {
+    return !(Arrays.stream(movesArray).anyMatch(String::isBlank));
   }
 
   public Parent getView() {
+    // reset game variables
+    resetTurn();
+    resetMovesArray();
+    // base grid
     GridPane layout = new GridPane();
-    Label turnLabel = new Label(turn);
+    // create turn label
+    Label turnLabel = new Label("Turn: " + this.turn);
+    turnLabel.setFont(Font.font("Monospaced"));
+    // create list of grid buttons
     ArrayList<Button> gridButtons = new ArrayList<>();
     for (int i = 0; i <= 8; i++) {
       Button gridButton = new Button("");
       int index = i;
       gridButton.setOnAction((event) -> {
-        // check squared is not already played
+        // check square is not already played
         if (gridButton.getText().isBlank()) {
           gridButton.setText(turn);
           movesArray[index] = turn;
-          // check winner
+          // if no winner or draw, keep playing
           if (isWinner()) {
             turnLabel.setText("Winner is: " + this.turn);
-             return;
+            ResultView.getView(this.turn);
+          } else if (isDraw()) {
+            turnLabel.setText("It's a draw");
+            ResultView.getView("draw");
+          } else {
+            changeTurn();
+            turnLabel.setText("Turn: " + this.turn);
           }
-          changeTurn();
-          turnLabel.setText(this.turn);
         }
       });
+      gridButton.setFont(Font.font("Monospaced", 40));
+      gridButton.setMinHeight(80);
+      gridButton.setMinWidth(80);
       gridButtons.add(gridButton);
     }
-    layout.add(gridButtons.get(0), 0, 0);
-    layout.add(gridButtons.get(1), 1, 0);
-    layout.add(gridButtons.get(2), 2, 0);
-    layout.add(gridButtons.get(3), 0, 1);
-    layout.add(gridButtons.get(4), 1, 1);
-    layout.add(gridButtons.get(5), 2, 1);
-    layout.add(gridButtons.get(6), 0, 2);
-    layout.add(gridButtons.get(7), 1, 2);
-    layout.add(gridButtons.get(8), 2, 2);
-    layout.add(turnLabel, 0, 3);
+    layout.add(turnLabel, 0, 0);
+    layout.add(gridButtons.get(0), 0, 1);
+    layout.add(gridButtons.get(1), 1, 1);
+    layout.add(gridButtons.get(2), 2, 1);
+    layout.add(gridButtons.get(3), 0, 2);
+    layout.add(gridButtons.get(4), 1, 2);
+    layout.add(gridButtons.get(5), 2, 2);
+    layout.add(gridButtons.get(6), 0, 3);
+    layout.add(gridButtons.get(7), 1, 3);
+    layout.add(gridButtons.get(8), 2, 3);
+
+    // visual
+    layout.setAlignment(Pos.CENTER);
+    layout.setHgap(10);
+    layout.setVgap(10);
+    layout.setPadding(new Insets(10, 10 , 10, 10));
 
     return layout;
   }
