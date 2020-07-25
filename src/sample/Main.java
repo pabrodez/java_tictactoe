@@ -17,19 +17,17 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        // create grid view
-        GridView gridView = new GridView();
         // main layout
         BorderPane layout = new BorderPane();
+        // create grid view
+        GridView gridView = new GridView();
         // top menu
         HBox topMenu = new HBox();
         topMenu.setPadding(new Insets(10, 10, 10, 10));
         // create and add new game button
-        Button startButton = new Button("New Game");
-        startButton.setOnAction((ev) -> layout.setCenter(gridView.getView()));
+        Button startButton = StartButton.getStartButton(layout);
         topMenu.getChildren().add(startButton);
         layout.setTop(topMenu);
-        // TODO: add buttons to views here, not in the views themselves
 
         // create scene
         Scene mainScene = new Scene(layout, 400 , 400);

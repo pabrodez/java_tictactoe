@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -56,10 +57,10 @@ public class GridView {
   }
 
   private boolean isDraw() {
-    return !(Arrays.stream(movesArray).anyMatch(String::isBlank));
+    return (Arrays.stream(movesArray).noneMatch(String::isBlank));
   }
 
-  public Parent getView() {
+  public Parent getView(Button startButton, BorderPane mainLayout) {
     // reset game variables
     resetTurn();
     resetMovesArray();
@@ -80,11 +81,9 @@ public class GridView {
           movesArray[index] = turn;
           // if no winner or draw, keep playing
           if (isWinner()) {
-            turnLabel.setText("Winner is: " + this.turn);
-            ResultView.getView(this.turn);
+            ResultView.getView(mainLayout, this.turn, startButton);
           } else if (isDraw()) {
-            turnLabel.setText("It's a draw");
-            ResultView.getView("draw");
+            ResultView.getView(mainLayout, "draw", startButton);
           } else {
             changeTurn();
             turnLabel.setText("Turn: " + this.turn);
